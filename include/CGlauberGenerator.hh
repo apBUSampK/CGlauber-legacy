@@ -22,7 +22,7 @@ private:
     double sNN;
     double xSectNN;
 
-    TGlauberMC generator;
+    std::unique_ptr<TGlauberMC> generator;
 
     cola::Particle TGCConvert(const TGlauNucleon*) const;
 public:

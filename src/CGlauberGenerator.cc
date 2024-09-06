@@ -6,7 +6,7 @@
 
 #include "CGlauberGenerator.hh"
 
-cola::AZ DefinedIons(const string& name) {
+cola::AZ DefinedIons(const std::string& name) {
     if (name == "p")
         return {1, 1};
     else if (name == "pg")
@@ -130,9 +130,9 @@ cola::Particle CGlauberGenerator::TGCConvert(const TGlauNucleon* tNucleon) const
 }
 
 std::unique_ptr<cola::EventData> CGlauberGenerator::operator()() {
-    generator.Run(1);
-    auto ev = generator.GetEvent();
-    auto tNucleons = generator.GetNucleons();
+    generator->Run(1);
+    auto ev = generator->GetEvent();
+    auto tNucleons = generator->GetNucleons();
     int nev = tNucleons->GetEntries();
     auto cParticles = cola::EventParticles(nev);
     for (int i = 0; i < nev; i++)
@@ -145,14 +145,14 @@ std::unique_ptr<cola::EventData> CGlauberGenerator::operator()() {
                 pZB,
                 energy,
                 static_cast<float>(xSectNN),
-                static_cast<float>(generator.GetB()),
-                generator.GetNcoll(),
-                generator.GetNcollpp(),
-                generator.GetNcollpn(),
-                generator.GetNcollnn(),
-                generator.GetNpart(),
-                generator.GetNpartA(),
-                generator.GetNpartB(),
+                static_cast<float>(generator->GetB()),
+                generator->GetNcoll(),
+                generator->GetNcollpp(),
+                generator->GetNcollpn(),
+                generator->GetNcollnn(),
+                generator->GetNpart(),
+                generator->GetNpartA(),
+                generator->GetNpartB(),
                 ev->PhiA,
                 ev->ThetaA,
                 ev->PhiB,
@@ -290,5 +290,5 @@ CGlauberGenerator::CGlauberGenerator(const std::string& NA, const std::string& N
         double S = sNN * sNN;
         xSectNN = 25.0 + 0.146 * pow(log(S / (GeV * GeV)), 2);
     }
-    this->generator = TGlauberMC(NA.c_str(), NB.c_str(), xSectNN, -1, time(nullptr));
+    this->generator = std::make_unique<TGlauberMC>(NA.c_str(), NB.c_str(), xSectNN, -1, time(nullptr));
 }

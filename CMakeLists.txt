@@ -23,6 +23,9 @@ target_link_libraries(CGlauber PUBLIC COLA ROOT::RIO ROOT::MathMore ${ROOT_LIBRA
 
 set_target_properties(CGlauber PROPERTIES PUBLIC_HEADER include/CGlauber.hh)
 
+# Add installation path for library to find .dat files:
+add_compile_definitions(DATA_INSTALL="${CMAKE_INSTALL_PREFIX}/data/${COLA_MODULE_NAME}/")
+
 # Configure config files
 configure_package_config_file(
         "${PROJECT_SOURCE_DIR}/data/CGlauberConfig.cmake.in"
@@ -52,3 +55,13 @@ install(EXPORT CGlauberExport
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/CGlauberConfig.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/CGlauberConfigVersion.cmake"
         DESTINATION lib/cmake/${COLA_MODULE_NAME})
+
+#install .dat files for proper TGlauber generation
+install(FILES ${PROJECT_SOURCE_DIR}/data/ca40_alv.dat
+        ${PROJECT_SOURCE_DIR}/data/carbon_plaintext.dat
+        ${PROJECT_SOURCE_DIR}/data/h3_plaintext.dat
+        ${PROJECT_SOURCE_DIR}/data/he3_plaintext.dat
+        ${PROJECT_SOURCE_DIR}/data/he4_plaintext.dat
+        ${PROJECT_SOURCE_DIR}/data/o16_alv.dat
+        ${PROJECT_SOURCE_DIR}/data/oxygen_plaintext.dat
+        DESTINATION data/${COLA_MODULE_NAME})

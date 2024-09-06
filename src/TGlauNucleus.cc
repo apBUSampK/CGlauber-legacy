@@ -444,13 +444,13 @@ TVector3 &TGlauNucleus::ThrowNucleons(Double_t xshift)
     }
     fTrials = 1;
 
-  } else if (fN > 2 && fN < 41 && nucleonsfromfile) {
+  }
+#ifdef DATA_INSTALL // set by CMake to ensure .dat files installation
+  else if (fN > 2 && fN < 41 && nucleonsfromfile) {
 
     // if the first call, then read in the file configurations
     if (fNucCounter == -1) {
-        std::string filepath(__FILE__);
-        std::string locfilename(basename(__FILE__));
-        filepath.erase(filepath.length() - locfilename.length(), locfilename.length());
+        std::string filepath(DATA_INSTALL);
         // read in the ascii file into the array and step through the counter
       char filename[100] = "foo.dat";
       if (tmpname=="He3") {
@@ -613,7 +613,9 @@ TVector3 &TGlauNucleus::ThrowNucleons(Double_t xshift)
 
     ++fNucCounter;
     fTrials = 1;
-  } else { // all other nuclei 
+  }
+#endif
+  else { // all other nuclei
 
     const Double_t startingEdge  = 20; // throw nucleons within a cube of this size (fm)
     const Double_t startingEdgeX = startingEdge + fNodeDist*gRandom->Rndm() - 0.5*fNodeDist;
