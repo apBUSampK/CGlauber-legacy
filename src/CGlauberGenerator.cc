@@ -133,7 +133,9 @@ std::unique_ptr<cola::EventData> CGlauberGenerator::operator()() {
     generator->Run(1);
     auto ev = generator->GetEvent();
     auto tNucleons = generator->GetNucleons();
-    int nev = tNucleons->GetEntries();
+    int nev = 0;
+    if (tNucleons != nullptr)
+        nev = tNucleons->GetEntries();
     auto cParticles = cola::EventParticles(nev);
     for (int i = 0; i < nev; i++)
         cParticles[i] = TGCConvert(dynamic_cast<TGlauNucleon*>(tNucleons->At(i)));
@@ -156,7 +158,8 @@ std::unique_ptr<cola::EventData> CGlauberGenerator::operator()() {
                 ev->PhiA,
                 ev->ThetaA,
                 ev->PhiB,
-                ev->ThetaB
+                ev->ThetaB,
+                cParticles
         },
         cParticles
     });
