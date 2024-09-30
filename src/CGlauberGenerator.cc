@@ -116,9 +116,11 @@ cola::AZ DefinedIons(const std::string& name) {
 
 cola::Particle CGlauberGenerator::TGCConvert(const TGlauNucleon* tNucleon) const {
     return cola::Particle{
+        0,
         tNucleon->GetX(),
         tNucleon->GetY(),
         tNucleon->GetZ(),
+        tNucleon->GetEnergy(),
         0,
         0,
         tNucleon->IsInNucleusA() ? pZA : pZB,
