@@ -167,8 +167,9 @@ std::unique_ptr<cola::EventData> CGlauberGenerator::operator()() {
     });
 }
 
-CGlauberGenerator::CGlauberGenerator(const std::string& NA, const std::string& NB, const double E, const bool isCollider) {
+CGlauberGenerator::CGlauberGenerator(const std::string& NA, const std::string& NB, double E, const bool isCollider) {
     const double GeV = 1e3; // Energy is in MeV by default (CLHEP)
+    E *= GeV;
     const double nucleonAverMass = 0.93891875434*GeV;
 
     cola::AZ AZA = DefinedIons(NA);
@@ -188,7 +189,7 @@ CGlauberGenerator::CGlauberGenerator(const std::string& NA, const std::string& N
         sNN = pow(2*nucleonAverMass*nucleonAverMass+2*E*nucleonAverMass, 0.5);
     }
 
-    double enAtRest = isCollider ? sNN*sNN / 2 / nucleonAverMass - 2 * nucleonAverMass : E;
+    double enAtRest = isCollider ? sNN*sNN / 2 / nucleonAverMass - nucleonAverMass : E;
     if(enAtRest < 425*GeV){
         const std::map<double, double> bystricky = {{0.28, 0.027},
                                                     {0.29, 0.051},
