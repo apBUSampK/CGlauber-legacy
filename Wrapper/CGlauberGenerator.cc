@@ -4,6 +4,8 @@
 
 #include <map>
 
+#include "GlauberConst.h"
+
 #include "CGlauberGenerator.hh"
 
 cola::AZ DefinedIons(const std::string& name) {
@@ -114,23 +116,6 @@ cola::AZ DefinedIons(const std::string& name) {
         throw std::runtime_error("No such ion in CGlauber");
 }
 
-cola::Particle CGlauberGenerator::TGCConvert(const TGlauNucleon* tNucleon) const {
-    return cola::Particle{
-        0,
-        tNucleon->GetX(),
-        tNucleon->GetY(),
-        tNucleon->GetZ(),
-        tNucleon->GetEnergy(),
-        0,
-        0,
-        tNucleon->IsInNucleusA() ? pZA : pZB,
-        tNucleon->GetType() ? 2212 : 2112,
-        tNucleon->IsInNucleusA() ?
-        (tNucleon->IsSpectator() ? cola::ParticleClass::spectatorA : cola::ParticleClass::nonelasticA) :
-        (tNucleon->IsSpectator() ? cola::ParticleClass::spectatorB : cola::ParticleClass::nonelasticB)
-    };
-}
-
 std::unique_ptr<cola::EventData> CGlauberGenerator::operator()() {
     generator->Run(1);
     auto ev = generator->GetEvent();
@@ -138,9 +123,31 @@ std::unique_ptr<cola::EventData> CGlauberGenerator::operator()() {
     int nev = 0;
     if (tNucleons != nullptr)
         nev = tNucleons->GetEntries();
+
     auto cParticles = cola::EventParticles(nev);
-    for (int i = 0; i < nev; i++)
-        cParticles[i] = TGCConvert(dynamic_cast<TGlauNucleon*>(tNucleons->At(i)));
+    auto fMomentumA = fermiMomentum->getMomentum(generator->GetNucleusA()->GetN(), generator->GetNpartA());
+    auto fMomentumB = fermiMomentum->getMomentum(generator->GetNucleusB()->GetN(), generator->GetNpartB());
+
+    double rapidity = std::log(energy + pZA) - std::log(gconst::nucleonAverMass);
+
+    fMomentumA.boostAxisRapidity(rapidity);
+    if (pZB != 0)
+        fMomentumB.boostAxisRapidity(-rapidity);
+
+    for (int i = 0; i < nev; i++) {
+        auto tNucleon = dynamic_cast<TGlauNucleon*>(tNucleons->At(i));
+        cParticles[i] = cola::Particle{
+                0,
+                tNucleon->GetX(),
+                tNucleon->GetY(),
+                tNucleon->GetZ(),
+                tNucleon->IsInNucleusA() ? fMomentumA : fMomentumB,
+                tNucleon->GetType() ? 2212 : 2112,
+                tNucleon->IsInNucleusA() ?
+                (tNucleon->IsSpectator() ? cola::ParticleClass::spectatorA : cola::ParticleClass::nonelasticA) :
+                (tNucleon->IsSpectator() ? cola::ParticleClass::spectatorB : cola::ParticleClass::nonelasticB)
+        };
+    }
     return std::make_unique<cola::EventData>(cola::EventData{
         cola::EventIniState{
                 pdgCodeA,
@@ -167,10 +174,9 @@ std::unique_ptr<cola::EventData> CGlauberGenerator::operator()() {
     });
 }
 
-CGlauberGenerator::CGlauberGenerator(const std::string& NA, const std::string& NB, double E, const bool isCollider) {
-    const double GeV = 1e3; // Energy is in MeV by default (CLHEP)
-    E *= GeV;
-    const double nucleonAverMass = 0.93891875434*GeV;
+CGlauberGenerator::CGlauberGenerator(const std::string& NA, const std::string& NB, double E, const bool isCollider,
+                                     std::unique_ptr<FermiMomentum>&& fermiMomentum) : fermiMomentum(std::move(fermiMomentum)) {
+    E *= gconst::GeV;
 
     cola::AZ AZA = DefinedIons(NA);
     cola::AZ AZB = DefinedIons(NB);
@@ -178,19 +184,19 @@ CGlauberGenerator::CGlauberGenerator(const std::string& NA, const std::string& N
     pdgCodeB = cola::AZToPdg(AZB);
     
     if (isCollider) {
-        pZA =    pow(E*E*0.25 - nucleonAverMass*nucleonAverMass,0.5);
-        pZB = -1*pow(E*E*0.25 - nucleonAverMass*nucleonAverMass,0.5);
-        energy = (E/2.0 - nucleonAverMass);
+        pZA =    pow(E*E*0.25 - gconst::nucleonAverMass*gconst::nucleonAverMass,0.5);
+        pZB = -1*pow(E*E*0.25 - gconst::nucleonAverMass*gconst::nucleonAverMass,0.5);
+        energy = (E/2.0 - gconst::nucleonAverMass);
         sNN = E;
     } else {
-        pZA = pow(E*(E+2*nucleonAverMass),0.5);
+        pZA = pow(E*(E+2*gconst::nucleonAverMass),0.5);
         pZB = 0;
         energy = E;
-        sNN = pow(2*nucleonAverMass*nucleonAverMass+2*E*nucleonAverMass, 0.5);
+        sNN = pow(2*gconst::nucleonAverMass*gconst::nucleonAverMass+2*E*gconst::nucleonAverMass, 0.5);
     }
 
-    double enAtRest = isCollider ? sNN*sNN / 2 / nucleonAverMass - nucleonAverMass : E;
-    if(enAtRest < 425*GeV){
+    double enAtRest = isCollider ? sNN*sNN / 2 / gconst::nucleonAverMass - gconst::nucleonAverMass : E;
+    if(enAtRest < 425*gconst::GeV){
         const std::map<double, double> bystricky = {{0.28, 0.027},
                                                     {0.29, 0.051},
                                                     {0.30, 0.082},
@@ -286,15 +292,15 @@ CGlauberGenerator::CGlauberGenerator(const std::string& NA, const std::string& N
                                                     {375.0, 32.44},
                                                     {400.0, 32.24},
                                                     {425.0, 32.01}}; // energy : xsect data
-        auto nextVal = bystricky.lower_bound(enAtRest / GeV);
+        auto nextVal = bystricky.lower_bound(enAtRest / gconst::GeV);
         auto tabVal = nextVal++;
         double a = (nextVal->second - tabVal->second) / (nextVal->first - tabVal->first);
         double b = nextVal->second - a * nextVal->first;
-        xSectNN = a * enAtRest / GeV + b;
+        xSectNN = a * enAtRest / gconst::GeV + b;
     }
     else {
         double S = sNN * sNN;
-        xSectNN = 25.0 + 0.146 * pow(log(S / (GeV * GeV)), 2);
+        xSectNN = 25.0 + 0.146 * pow(log(S / (gconst::GeV * gconst::GeV)), 2);
     }
     this->generator = std::make_unique<TGlauberMC>(NA.c_str(), NB.c_str(), xSectNN, -1, time(nullptr));
 }

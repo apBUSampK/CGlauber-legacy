@@ -12,16 +12,21 @@ set(CMAKE_INSTALL_PREFIX ${COLA_DIR})
 set(COLA_MODULE_NAME CGlauber)
 
 # Add library target
-set(srcs src/CGlauberFactory.cc src/CGlauberGenerator.cc src/TGlauNucleon.cc src/TGlauNucleus.cc src/TGlauberMC.cc)
+set(srcs Wrapper/CGlauberFactory.cc Wrapper/CGlauberGenerator.cc TGlauber/TGlauNucleon.cc TGlauber/TGlauNucleus.cc TGlauber/TGlauberMC.cc FermiMomentum/FermiMomentum.cc FermiMomentum/FermiMomentum.hh GlauberConst.h)
 add_library(CGlauber SHARED ${srcs})
 
 target_include_directories(CGlauber PUBLIC
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/TGlauber;${PROJECT_SOURCE_DIR}/Wrapper;${PROJECT_SOURCE_DIR}/FermiMomentum;${PROJECT_SOURCE_DIR}>"
         $<INSTALL_INTERFACE:include/${COLA_MODULE_NAME}>)
 
 target_link_libraries(CGlauber PUBLIC COLA ROOT::RIO ROOT::MathMore ${ROOT_LIBRARIES})
 
-set_target_properties(CGlauber PROPERTIES PUBLIC_HEADER include/CGlauber.hh)
+# Specify public headers for installation
+set(PROJECT_PUBLIC_HEADERS "Wrapper/CGlauber.hh" "Wrapper/CGlauberFactory.hh" "Wrapper/CGlauberGenerator.hh"
+        "TGlauber/TGlauberMC.hh" "TGlauber/TGlauNucleon.hh" "TGlauber/TGlauNucleus.hh"
+        "GlauberConst.h" "GlauberConst.h")
+
+set_target_properties(CGlauber PROPERTIES PUBLIC_HEADER "${PROJECT_PUBLIC_HEADERS}")
 
 # Add installation path for library to find .dat files:
 add_compile_definitions(DATA_INSTALL="${CMAKE_INSTALL_PREFIX}/data/${COLA_MODULE_NAME}/")
@@ -43,10 +48,6 @@ install(TARGETS CGlauber
         LIBRARY DESTINATION lib/${COLA_MODULE_NAME}
         PUBLIC_HEADER DESTINATION include/${COLA_MODULE_NAME}
         INCLUDES DESTINATION include/${COLA_MODULE_NAME})
-
-# Install includes
-install(DIRECTORY include/
-        DESTINATION include/${COLA_MODULE_NAME})
 
 # Install export file and config files
 install(EXPORT CGlauberExport

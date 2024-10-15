@@ -7,9 +7,11 @@
 
 #include <queue>
 #include <string>
+#include <memory>
 
 #include "COLA.hh"
 
+#include "FermiMomentum.hh"
 #include "TGlauberMC.hh"
 
 class CGlauberGenerator final: public cola::VGenerator{
@@ -23,10 +25,11 @@ private:
     double xSectNN;
 
     std::unique_ptr<TGlauberMC> generator;
+    std::unique_ptr<FermiMomentum> fermiMomentum;
 
-    cola::Particle TGCConvert(const TGlauNucleon*) const;
 public:
-    CGlauberGenerator(const std::string&, const std::string&, double, bool);
+    CGlauberGenerator() = delete; // do not use default constructor
+    CGlauberGenerator(const std::string&, const std::string&, double, bool, std::unique_ptr<FermiMomentum>&&);
     std::unique_ptr<cola::EventData> operator()() final;
 };
 
