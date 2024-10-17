@@ -34,7 +34,7 @@ add_compile_definitions(DATA_INSTALL="${CMAKE_INSTALL_PREFIX}/data/${COLA_MODULE
 
 # Configure config files
 configure_package_config_file(
-        "${PROJECT_SOURCE_DIR}/data/CGlauberConfig.cmake.in"
+        "${PROJECT_SOURCE_DIR}/cmake/CGlauberConfig.cmake.in"
         "${CMAKE_CURRENT_BINARY_DIR}/CGlauberConfig.cmake"
         INSTALL_DESTINATION lib/cmake/${COLA_MODULE_NAME}
 )
