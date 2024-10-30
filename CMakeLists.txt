@@ -24,7 +24,7 @@ target_link_libraries(CGlauber PUBLIC COLA ROOT::RIO ROOT::MathMore ${ROOT_LIBRA
 # Specify public headers for installation
 set(PROJECT_PUBLIC_HEADERS "Wrapper/CGlauber.hh" "Wrapper/CGlauberFactory.hh" "Wrapper/CGlauberGenerator.hh"
         "TGlauber/TGlauberMC.hh" "TGlauber/TGlauNucleon.hh" "TGlauber/TGlauNucleus.hh"
-        "GlauberConst.h" "GlauberConst.h"
+        "GlauberConst.hh"
         "FermiMomentum/FermiMomentum.hh")
 
 set_target_properties(CGlauber PROPERTIES PUBLIC_HEADER "${PROJECT_PUBLIC_HEADERS}")

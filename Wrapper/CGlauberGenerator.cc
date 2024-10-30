@@ -4,7 +4,7 @@
 
 #include <map>
 
-#include "GlauberConst.h"
+#include "GlauberConst.hh"
 
 #include "CGlauberGenerator.hh"
 

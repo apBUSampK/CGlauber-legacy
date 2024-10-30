@@ -9,7 +9,7 @@
 #include <cmath>
 
 #include "COLA.hh"
-#include "GlauberConst.h"
+#include "GlauberConst.hh"
 
 // base class for distributions
 class FermiMomentum {
